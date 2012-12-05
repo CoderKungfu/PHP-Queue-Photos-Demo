@@ -1,0 +1,5 @@
+{
+    "require": {
+        "coderkungfu/php-queue": "0.1.x-dev"
+    }
+}
