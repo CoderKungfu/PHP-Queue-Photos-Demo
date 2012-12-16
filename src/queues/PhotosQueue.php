@@ -2,16 +2,17 @@
 class PhotosQueue extends PHPQueue\JobQueue
 {
     private $dataSource;
-    private $sourceConfig = array(
-          'server' => '127.0.0.1'
-        , 'tube'   => 'queue1'
-    );
     private $queueWorker = array('PhotoResize', 'MoveFile');
     private $resultLog;
 
     public function __construct()
     {
-        $this->dataSource = \PHPQueue\Base::backendFactory('Beanstalkd', $this->sourceConfig);
+        $type = getenv('backend_target');
+        if (empty($type))
+        {
+            $type = 'Beanstalkd';
+        }
+        $this->dataSource = \PHPQueue\Base::backendFactory($type, PhotoConfig::$backend_types[$type]['config']);
         $this->resultLog = \PHPQueue\Logger::createLogger(
                               'PhotosLogger'
                             , PHPQueue\Logger::INFO
