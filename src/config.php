@@ -7,16 +7,24 @@ class PhotoConfig
 {
     static public $backend_types = array(
               'Beanstalkd' => array(
-                    'config' => array(
-                            'server' => '127.0.0.1'
-                          , 'tube'   => 'queue1'
-                     )
+                        'server' => '127.0.0.1'
+                      , 'tube'   => 'queue1'
                 )
             , 'WindowsAzureServiceBus' => array(
-                    'config' => array(
-                            'connection_string' => ''
-                          , 'queue'             => 'noobq'
-                     )
+                        'connection_string' => ''
+                      , 'queue'             => 'noobq'
                 )
         );
+
+    static public function getConfig($type=null)
+    {
+        $config = isset(self::$backend_types[$type]) ? self::$backend_types[$type] : array();
+        switch($type)
+        {
+            case 'WindowsAzureServiceBus':
+                $config['connection_string'] = getenv('queue_connection_string');
+                break;
+        }
+        return $config;
+    }
 }

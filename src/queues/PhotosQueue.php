@@ -12,7 +12,8 @@ class PhotosQueue extends PHPQueue\JobQueue
         {
             $type = 'Beanstalkd';
         }
-        $this->dataSource = \PHPQueue\Base::backendFactory($type, PhotoConfig::$backend_types[$type]['config']);
+        $config = PhotoConfig::getConfig($type);
+        $this->dataSource = \PHPQueue\Base::backendFactory($type, $config);
         $this->resultLog = \PHPQueue\Logger::createLogger(
                               'PhotosLogger'
                             , PHPQueue\Logger::INFO
