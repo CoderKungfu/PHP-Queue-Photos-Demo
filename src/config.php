@@ -14,6 +14,12 @@ class PhotoConfig
                         'connection_string' => ''
                       , 'queue'             => 'noobq'
                 )
+	        , 'WindowsAzureBlobUploadContainer' => array(
+		                'container' => 'photosupload'
+	            )
+		    , 'WindowsAzureBlobCDNContainer' => array(
+						'container' => 'photoscdn'
+			    )
         );
 
     static public function getConfig($type=null)
@@ -24,6 +30,10 @@ class PhotoConfig
             case 'WindowsAzureServiceBus':
                 $config['connection_string'] = getenv('queue_connection_string');
                 break;
+	        case 'WindowsAzureBlobUploadContainer':
+		    case 'WindowsAzureBlobCDNContainer':
+	            $config['connection_string'] = getenv('wa_blob_connection_string');
+		        break;
         }
         return $config;
     }

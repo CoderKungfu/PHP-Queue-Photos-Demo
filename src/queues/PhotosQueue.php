@@ -1,19 +1,27 @@
 <?php
 class PhotosQueue extends PHPQueue\JobQueue
 {
-    private $dataSource;
-    private $queueWorker = array('PhotoResize', 'MoveFile');
+	/**
+	 * @var PHPQueue\Backend\Base
+	 */
+	private $dataSource;
+	/**
+	 * @var PHPQueue\Backend\FS
+	 */
+	private $blobSource;
+	private $queueWorker = array('DownloadBlob', 'PhotoResize', 'UploadCDN');
     private $resultLog;
 
     public function __construct()
     {
-        $type = getenv('backend_target');
-        if (empty($type))
-        {
-            $type = 'Beanstalkd';
-        }
-        $config = PhotoConfig::getConfig($type);
-        $this->dataSource = \PHPQueue\Base::backendFactory($type, $config);
+        $type = getenv('backend_target') ? getenv('backend_target') : 'WindowsAzureServiceBus';
+	    $config = PhotoConfig::getConfig($type);
+	    $this->dataSource = \PHPQueue\Base::backendFactory($type, $config);
+
+	    $upload_target = getenv('upload_target') ? getenv('upload_target') : 'WindowsAzureBlobUploadContainer';
+	    $upload_options = PhotoConfig::getConfig($upload_target);
+	    $this->blobSource = \PHPQueue\Base::backendFactory($upload_target, $upload_options);
+
         $this->resultLog = \PHPQueue\Logger::createLogger(
                               'PhotosLogger'
                             , PHPQueue\Logger::INFO
@@ -23,9 +31,22 @@ class PhotosQueue extends PHPQueue\JobQueue
 
     public function addJob(array $newJob)
     {
-        $formatted_data = array('worker'=>$this->queueWorker, 'data'=>$newJob);
-        $this->dataSource->add($formatted_data);
-        return true;
+	    if (empty($newJob['file']) || !is_file($newJob['file']))
+	    {
+		    throw new \PHPQueue\Exception\Exception('File not found.');
+	    }
+	    if (empty($newJob['filename']))
+	    {
+		    $newJob['filename'] = $newJob['file'];
+	    }
+	    $newJob['blobname'] = $this->genBlobName($newJob['filename']);
+	    $this->blobSource->putFile($newJob['blobname'], $newJob['file']);
+	    unset($newJob['file']);
+
+	    $formatted_data = array('worker'=>$this->queueWorker, 'data'=>$newJob);
+	    $this->dataSource->add($formatted_data);
+	    $this->resultLog->addInfo('Adding new job: ', $newJob);
+	    return true;
     }
 
     public function getJob()
@@ -38,6 +59,7 @@ class PhotosQueue extends PHPQueue\JobQueue
 
     public function updateJob($jobId = null, $resultData = null)
     {
+	    $this->blobSource->clear($resultData['blobname']);
         $this->resultLog->addInfo('Result: ID='.$jobId, $resultData);
     }
 
@@ -50,4 +72,11 @@ class PhotosQueue extends PHPQueue\JobQueue
     {
         $this->dataSource->release($jobId);
     }
+
+	private function genBlobName($file_path)
+	{
+		$blob_key = md5( sprintf('%s-%s', $file_path, time()) );
+		$ext = substr($file_path, strrpos($file_path, '.'));
+		return sprintf('%s%s', $blob_key, $ext);
+	}
 }
