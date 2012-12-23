@@ -9,7 +9,7 @@ class DownloadBlobWorker extends PHPQueue\Worker
         parent::__construct();
 	    $upload_target = getenv('upload_target') ? getenv('upload_target') : 'WindowsAzureBlobUploadContainer';
 	    $upload_options = PhotoConfig::getConfig($upload_target);
-	    self::$data_source = \PHPQueue\Base::backendFactory($upload_target, $upload_options);
+	    self::$data_source = \PHPQueue\Base::backendFactory($upload_options['backend'], $upload_options);
         $this->download_folder = __DIR__ . '/downloads/';
     }
 

@@ -1,5 +1,14 @@
 {
     "require": {
-        "coderkungfu/php-queue": "0.1.x-dev"
-    }
+        "coderkungfu/php-queue": "0.1.x-dev",
+        "microsoft/windowsazure": "*",
+        "clio/clio": "@stable"
+    },
+    "repositories": [
+        {
+            "type": "pear",
+            "url": "http://pear.php.net"
+        }
+    ],
+    "minimum-stability": "dev"
 }

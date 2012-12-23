@@ -12,7 +12,7 @@ class PhotoConfig
                 )
             , 'WindowsAzureServiceBus' => array(
                         'connection_string' => ''
-                      , 'queue'             => 'noobq'
+                      , 'queue'             => 'photosqueue'
                 )
 	        , 'WindowsAzureBlobUploadContainer' => array(
 		                'container' => 'photosupload'
@@ -25,6 +25,7 @@ class PhotoConfig
     static public function getConfig($type=null)
     {
         $config = isset(self::$backend_types[$type]) ? self::$backend_types[$type] : array();
+        $config['backend'] = $type;
         switch($type)
         {
             case 'WindowsAzureServiceBus':
@@ -33,6 +34,7 @@ class PhotoConfig
 	        case 'WindowsAzureBlobUploadContainer':
 		    case 'WindowsAzureBlobCDNContainer':
 	            $config['connection_string'] = getenv('wa_blob_connection_string');
+                $config['backend'] = 'WindowsAzureBlob';
 		        break;
         }
         return $config;

@@ -20,7 +20,7 @@ class PhotosQueue extends PHPQueue\JobQueue
 
 	    $upload_target = getenv('upload_target') ? getenv('upload_target') : 'WindowsAzureBlobUploadContainer';
 	    $upload_options = PhotoConfig::getConfig($upload_target);
-	    $this->blobSource = \PHPQueue\Base::backendFactory($upload_target, $upload_options);
+	    $this->blobSource = \PHPQueue\Base::backendFactory($upload_options['backend'], $upload_options);
 
         $this->resultLog = \PHPQueue\Logger::createLogger(
                               'PhotosLogger'

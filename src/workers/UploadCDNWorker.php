@@ -8,7 +8,7 @@ class UploadCDNWorker extends PHPQueue\Worker
         parent::__construct();
 	    $upload_target = getenv('cdn_target') ? getenv('cdn_target') : 'WindowsAzureBlobCDNContainer';
 	    $upload_options = PhotoConfig::getConfig($upload_target);
-        self::$data_source = \PHPQueue\Base::backendFactory($upload_target, $upload_options);
+        self::$data_source = \PHPQueue\Base::backendFactory($upload_options['backend'], $upload_options);
     }
 
     /**
