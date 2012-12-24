@@ -1,6 +1,9 @@
 <?php
 class UploadCDNWorker extends PHPQueue\Worker
 {
+    /**
+     * @var PHPQueue\Backend\FS
+     */
     static private $data_source;
 
     public function __construct()

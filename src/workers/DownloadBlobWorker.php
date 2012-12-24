@@ -1,8 +1,11 @@
 <?php
 class DownloadBlobWorker extends PHPQueue\Worker
 {
-    private $download_folder;
+    /**
+     * @var \PHPQueue\Backend\FS
+     */
     static private $data_source;
+    private $download_folder;
 
     public function __construct()
     {
@@ -24,9 +27,9 @@ class DownloadBlobWorker extends PHPQueue\Worker
         {
             throw new PHPQueue\Exception\Exception('Blob not found.');
         }
-        $blobname = $jobData['blobname'];
-        $download_path = $this->download_folder . $blobname;
-        self::$data_source->fetchFile($blobname, $download_path);
+        $blob_name = $jobData['blobname'];
+        $download_path = $this->download_folder . $blob_name;
+        self::$data_source->fetchFile($blob_name, $download_path);
         $jobData['downloaded_file'] = $download_path;
         $this->result_data = $jobData;
     }
